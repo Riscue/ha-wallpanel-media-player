@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -e
+
+python -m venv homeassistant
+
+source homeassistant/bin/activate
+
+pip install -r requirements.test.txt
+
+hass --config config --script ensure_config
+
+if ! grep -R "logger" config/configuration.yaml >> /dev/null;then
+echo "
+logger:
+  default: error
+  logs:
+    custom_components.wallpanel_media_player: debug
+wallpanel_media_player:
+  name: Wallpanel Media Player
+  address: 127.0.0.1" >> config/configuration.yaml
+fi

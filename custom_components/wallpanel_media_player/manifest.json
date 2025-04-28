@@ -1,0 +1,11 @@
+{
+  "domain": "wallpanel_media_player",
+  "name": "Wallpanel Media Player",
+  "codeowners": [
+    "@Riscue"
+  ],
+  "dependencies": [],
+  "documentation": "https://wallpanel.xyz",
+  "requirements": [],
+  "version": "1.0.0"
+}

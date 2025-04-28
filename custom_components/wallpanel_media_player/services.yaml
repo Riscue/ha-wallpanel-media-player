@@ -1,0 +1,9 @@
+wallpanel_media_player:
+  description: "Control Wallpanel Media Player"
+  fields:
+    command:
+      description: "Command to send to Wallpanel (audio, volume, speak)"
+      example: "audio"
+    value:
+      description: "Value for command (e.g., volume level or audio URL)"
+      example: "100"
