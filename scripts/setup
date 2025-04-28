@@ -16,7 +16,10 @@ logger:
   default: error
   logs:
     custom_components.wallpanel_media_player: debug
-wallpanel_media_player:
-  name: Wallpanel Media Player
-  address: 127.0.0.1" >> config/configuration.yaml
+
+media_player:
+  - platform: wallpanel_media_player
+    name: Wallpanel Media Player
+    address: http://127.0.0.1:2971
+" >> config/configuration.yaml
 fi

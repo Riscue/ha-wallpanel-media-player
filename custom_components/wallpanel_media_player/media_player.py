@@ -1,61 +1,39 @@
+"""Wallpanel media player component."""
+
 import logging
-import requests
-from homeassistant.components.media_player import MediaPlayerEntity
-from homeassistant.const import STATE_IDLE
+
+import homeassistant.helpers.config_validation as cv
+import voluptuous as vol
+from homeassistant.components.media_player import (
+    PLATFORM_SCHEMA as MEDIA_PLAYER_PLATFORM_SCHEMA,
+)
+from homeassistant.const import CONF_NAME, CONF_ADDRESS
 from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+
+from custom_components.wallpanel_media_player.wallpanel import WallpanelMediaPlayer
 
 _LOGGER = logging.getLogger(__name__)
 
+CONF_ARGUMENTS = "arguments"
+DEFAULT_NAME = "Wallpanel Media Player"
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
-    """Set up the LG webOS Smart TV platform."""
-    print("media_player_async_setup_entry")
-    async_add_entities([WallpanelMediaPlayer(entry)])
+PLATFORM_SCHEMA = MEDIA_PLAYER_PLATFORM_SCHEMA.extend(
+    {
+        vol.Optional(CONF_ADDRESS, default="http://127.0.0.1:2971"): cv.string,
+        vol.Optional(CONF_NAME): cv.string,
+    }
+)
 
 
-class WallpanelMediaPlayer(MediaPlayerEntity):
-    """Representation of a Wallpanel media player."""
-
-    def __init__(self, entry: ConfigEntry):
-        print("WallpanelMediaPlayer__init__")
-        self._name = entry.name
-        self._address = entry.address
-        self._state = STATE_IDLE
-        self._volume = 1.0
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def state(self):
-        return self._state
-
-    @property
-    def volume_level(self):
-        return self._volume
-
-    def set_volume_level(self, volume):
-        """Set volume level of the Wallpanel."""
-        self._volume = volume
-        self.send_audio_command("volume", volume)
-
-    def media_play(self):
-        """Play the media."""
-        self.send_audio_command("audio")
-
-    def media_stop(self):
-        """Stop the media."""
-        self.send_audio_command("audio", "stop")
-
-    def send_audio_command(self, command, value=None):
-        """Send an audio command to Wallpanel."""
-        url = f"{self._address}/api/command"
-        payload = {command: value} if value else {command: True}
-        try:
-            response = requests.post(url, json=payload)
-            response.raise_for_status()
-        except requests.exceptions.RequestException as err:
-            _LOGGER.error("Error sending command to Wallpanel: %s", err)
+def setup_platform(
+        hass: HomeAssistant,
+        config: ConfigType,
+        add_entities: AddEntitiesCallback,
+        discovery_info: DiscoveryInfoType | None = None,
+) -> None:
+    """Set up the vlc platform."""
+    add_entities(
+        [WallpanelMediaPlayer(config.get(CONF_NAME, DEFAULT_NAME), config.get(CONF_ADDRESS))]
+    )
