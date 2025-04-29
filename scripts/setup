@@ -20,6 +20,5 @@ logger:
 media_player:
   - platform: wallpanel_media_player
     name: Wallpanel Media Player
-    address: http://127.0.0.1:2971
-" >> config/configuration.yaml
+    address: http://127.0.0.1:2971" >> config/configuration.yaml
 fi
