@@ -27,7 +27,7 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
     def __init__(self, name, address):
         _LOGGER.debug("WallpanelMediaPlayer Init: name: %s, address: %s", name, address)
         self._attr_name = name
-        self._attr_state = MediaPlayerState.PLAYING
+        self._attr_state = MediaPlayerState.ON
         self._attr_volume_level = 0.5
         self._address = address
 
@@ -36,7 +36,6 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
         self.send_command({"volume": int(self._attr_volume_level * 100)})
 
     def media_stop(self) -> None:
-        self._attr_state = MediaPlayerState.PLAYING
         self.send_command({"audio": ""})
 
     async def async_play_media(
@@ -64,7 +63,6 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
             self.send_command({"volume": int(self._attr_volume_level * 100), "audio": media_id})
 
         await self.hass.async_add_executor_job(play)
-        self._attr_state = MediaPlayerState.PLAYING
 
     def send_command(self, payload):
         url = f"{self._address}/api/command"
