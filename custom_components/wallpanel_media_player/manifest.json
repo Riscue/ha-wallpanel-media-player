@@ -9,6 +9,7 @@
   ],
   "documentation": "https://github.com/Riscue/ha-wallpanel-media-player",
   "issue_tracker": "https://github.com/Riscue/ha-wallpanel-media-player/issues",
+  "iot_class": "assumed_state",
   "requirements": [],
-  "version": "1.0.0"
+  "version": "1.0.2"
 }
