@@ -24,3 +24,9 @@ media_player:
     name: Wallpanel Media Player
     address: http://127.0.0.1:2971
 ```
+
+## License
+
+MIT © [İbrahim Akyel][riscue]
+
+[riscue]: https://github.com/riscue
