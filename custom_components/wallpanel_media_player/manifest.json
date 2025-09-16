@@ -4,8 +4,11 @@
   "codeowners": [
     "@Riscue"
   ],
-  "dependencies": [],
+  "dependencies": [
+    "http"
+  ],
   "documentation": "https://github.com/Riscue/ha-wallpanel-media-player",
+  "issue_tracker": "https://github.com/Riscue/ha-wallpanel-media-player/issues",
   "requirements": [],
   "version": "1.0.0"
 }
