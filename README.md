@@ -27,6 +27,6 @@ media_player:
 
 ## License
 
-MIT © [İbrahim Akyel][riscue]
+MIT © [Riscue][riscue]
 
 [riscue]: https://github.com/riscue
