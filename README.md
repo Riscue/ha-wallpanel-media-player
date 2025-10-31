@@ -1,5 +1,12 @@
 # Wallpanel Media Player
 
+[![hacs](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/hacs/default)
+[![License](https://img.shields.io/github/license/Riscue/ha-wallpanel-media-player.svg?style=for-the-badge)](LICENSE.md)
+
+[![GitHub Release](https://img.shields.io/github/release/Riscue/ha-wallpanel-media-player.svg?style=for-the-badge)](https://github.com/Riscue/ha-wallpanel-media-player/releases)
+[![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/Riscue/ha-wallpanel-media-player/latest/total?label=downloads&style=for-the-badge)](https://github.com/Riscue/ha-wallpanel-media-player/releases)
+[![GitHub Activity](https://img.shields.io/github/commit-activity/y/Riscue/ha-wallpanel-media-player.svg?style=for-the-badge)](https://github.com/Riscue/ha-wallpanel-media-player/commits/master)
+
 Media Player integration for [https://wallpanel.xyz](https://wallpanel.xyz)
 
 ![Icon](assets/logo.png)
@@ -27,6 +34,4 @@ media_player:
 
 ## License
 
-MIT © [Riscue][riscue]
-
-[riscue]: https://github.com/riscue
+MIT © [Riscue](https://github.com/riscue)
