@@ -11,5 +11,5 @@
   "iot_class": "assumed_state",
   "issue_tracker": "https://github.com/Riscue/ha-wallpanel-media-player/issues",
   "requirements": [],
-  "version": "1.0.2"
+  "version": "1.0.3"
 }
