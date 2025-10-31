@@ -1,0 +1,6 @@
+[run]
+branch = True
+source = custom_components/wallpanel_media_player/
+omit =
+    custom_components/wallpanel_media_player/__init__.py
+    custom_components/wallpanel_media_player/media_player.py

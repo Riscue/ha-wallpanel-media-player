@@ -13,6 +13,7 @@ config/
 venv/
 homeassistant/
 custom_components/hacs/
+htmlcov/
 
 # dependencies
 node_modules
@@ -51,6 +52,8 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
+.coverage
+*.json
 
 # System Files
 .DS_Store

@@ -1,4 +1,6 @@
 {
   "name": "Wallpanel Media Player",
-  "render_readme": true
+  "zip_release": true,
+  "render_readme": true,
+  "filename": "wallpanel_media_player.zip"
 }
