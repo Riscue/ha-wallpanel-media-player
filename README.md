@@ -2,7 +2,9 @@
 
 [![Home Assistant](https://img.shields.io/badge/home%20assistant-%2341BDF5.svg?style=for-the-badge&logo=home-assistant&logoColor=white)](https://home-assistant.io)
 [![hacs](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/hacs/default)
-[![License](https://img.shields.io/github/license/Riscue/ha-wallpanel-media-player.svg?style=for-the-badge)](LICENSE.md)
+[![License][license-shield]](LICENSE.md)
+
+[license-shield]: https://img.shields.io/github/license/Riscue/ha-wallpanel-media-player.svg?style=for-the-badge
 
 [![GitHub Release](https://img.shields.io/github/release/Riscue/ha-wallpanel-media-player.svg?style=for-the-badge)](https://github.com/Riscue/ha-wallpanel-media-player/releases)
 [![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/Riscue/ha-wallpanel-media-player/latest/total?label=downloads&style=for-the-badge)](https://github.com/Riscue/ha-wallpanel-media-player/releases)
