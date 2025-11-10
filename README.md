@@ -6,8 +6,10 @@
 
 [license-shield]: https://img.shields.io/github/license/Riscue/ha-wallpanel-media-player.svg?style=for-the-badge
 
-[![GitHub Release](https://img.shields.io/github/release/Riscue/ha-wallpanel-media-player.svg?style=for-the-badge)](https://github.com/Riscue/ha-wallpanel-media-player/releases)
+[![Active installations](https://badge.t-haber.de/badge/wallpanel_media_player)](https://github.com/Riscue/ha-wallpanel-media-player)
 [![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/Riscue/ha-wallpanel-media-player/latest/total?label=downloads&style=for-the-badge)](https://github.com/Riscue/ha-wallpanel-media-player/releases)
+
+[![GitHub Release](https://img.shields.io/github/release/Riscue/ha-wallpanel-media-player.svg?style=for-the-badge)](https://github.com/Riscue/ha-wallpanel-media-player/releases)
 [![GitHub Activity](https://img.shields.io/github/commit-activity/y/Riscue/ha-wallpanel-media-player.svg?style=for-the-badge)](https://github.com/Riscue/ha-wallpanel-media-player/commits/master)
 
 Media Player integration for [https://wallpanel.xyz](https://wallpanel.xyz)
