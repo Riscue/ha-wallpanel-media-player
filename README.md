@@ -6,7 +6,7 @@
 
 [license-shield]: https://img.shields.io/github/license/Riscue/ha-wallpanel-media-player.svg?style=for-the-badge
 
-[![Active installations](https://badge.t-haber.de/badge/wallpanel_media_player)](https://github.com/Riscue/ha-wallpanel-media-player)
+[![Active installations](https://img.shields.io/badge/dynamic/json?style=for-the-badge&color=41BDF5&logo=home-assistant&label=active%20installations&cacheSeconds=15600&url=https://analytics.home-assistant.io/custom_integrations.json&query=$.wallpanel_media_player.total)](https://github.com/Riscue/ha-wallpanel-media-player)
 [![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/Riscue/ha-wallpanel-media-player/latest/total?label=downloads&style=for-the-badge)](https://github.com/Riscue/ha-wallpanel-media-player/releases)
 
 [![GitHub Release](https://img.shields.io/github/release/Riscue/ha-wallpanel-media-player.svg?style=for-the-badge)](https://github.com/Riscue/ha-wallpanel-media-player/releases)
