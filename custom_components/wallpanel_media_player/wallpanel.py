@@ -22,6 +22,7 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
             MediaPlayerEntityFeature.VOLUME_SET
             | MediaPlayerEntityFeature.PLAY_MEDIA
             | MediaPlayerEntityFeature.STOP
+            | MediaPlayerEntityFeature.SPEAK
     )
 
     def __init__(self, name, address):
@@ -63,6 +64,13 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
             self.send_command({"volume": int(self._attr_volume_level * 100), "audio": media_id})
 
         await self.hass.async_add_executor_job(play)
+
+    async def async_speak(self, text: str) -> None:
+        """Speak text using device TTS."""
+        def speak_command():
+            self.send_command({"speak": text})
+
+        await self.hass.async_add_executor_job(speak_command)
 
     def send_command(self, payload):
         url = f"{self._address}/api/command"
