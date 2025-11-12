@@ -1,6 +1,7 @@
 import json
 import logging
 import time
+from datetime import datetime, timedelta
 from typing import Any
 
 import requests
@@ -31,16 +32,28 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
     def __init__(self, name, address):
         _LOGGER.debug("WallpanelMediaPlayer Init: name: %s, address: %s", name, address)
         self._attr_name = name
-        self._attr_state = MediaPlayerState.ON
+        self._attr_state = MediaPlayerState.IDLE
         self._attr_volume_level = 0.5
         self._address = address
+
+        # Media tracking attributes
+        self._attr_media_duration = None
+        self._attr_media_position = None
+        self._attr_media_position_updated_at = None
+        self._current_media_url = None
 
     def set_volume_level(self, volume: float) -> None:
         self._attr_volume_level = volume
         self.send_command({"volume": int(self._attr_volume_level * 100)})
 
     def media_stop(self) -> None:
+        self._attr_state = MediaPlayerState.IDLE
+        self._attr_media_duration = None
+        self._attr_media_position = None
+        self._attr_media_position_updated_at = None
+        self._current_media_url = None
         self.send_command({"audio": ""})
+        self.async_write_ha_state()
 
     async def async_play_media(
             self, media_type: MediaType | str, media_id: str, **kwargs: Any
@@ -64,7 +77,14 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
         media_id = async_process_play_media_url(self.hass, media_id)
 
         def play():
+            self._attr_state = MediaPlayerState.PLAYING
+            self._current_media_url = media_id
+            self._attr_media_position = 0
+            self._attr_media_position_updated_at = datetime.utcnow()
+            # Reset duration as we don't get this info from Wallpanel API
+            self._attr_media_duration = None
             self.send_command({"volume": int(self._attr_volume_level * 100), "audio": media_id})
+            self.async_write_ha_state()
 
         await self.hass.async_add_executor_job(play)
 
@@ -74,6 +94,21 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
             self.send_command({"speak": text})
 
         await self.hass.async_add_executor_job(speak_command)
+
+    @property
+    def media_position(self) -> int | None:
+        """Position of current media in seconds."""
+        return self._attr_media_position
+
+    @property
+    def media_position_updated_at(self) -> datetime | None:
+        """When was the position of the current media valid."""
+        return self._attr_media_position_updated_at
+
+    @property
+    def media_duration(self) -> float | None:
+        """Duration of current media in seconds."""
+        return self._attr_media_duration
 
     def send_command(self, payload, retry_count=0):
         """Send command to wallpanel with retry logic."""
