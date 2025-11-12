@@ -107,6 +107,56 @@ class TestWallpanelMediaPlayer:
         mock_process_url.assert_called_once_with(hass, "test.mp3")
         hass.async_add_executor_job.assert_called_once()
 
+    @patch("custom_components.wallpanel_media_player.wallpanel.media_source.is_media_source_id")
+    @patch("custom_components.wallpanel_media_player.wallpanel.media_source.async_resolve_media")
+    @patch("custom_components.wallpanel_media_player.wallpanel.requests.post")
+    @patch("custom_components.wallpanel_media_player.wallpanel.async_process_play_media_url")
+    async def test_async_play_media_source(self, mock_process_url, mock_post, mock_resolve, mock_is_media):
+        """Test async play media with media source."""
+        mock_is_media.return_value = True
+        mock_resolve.return_value = Mock(url="http://resolved.media.url")
+        mock_process_url.return_value = "http://processed.media.url"
+        mock_response = Mock()
+        mock_response.raise_for_status.return_value = None
+        mock_post.return_value = mock_response
+
+        # Mock hass and async_add_executor_job
+        hass = Mock()
+        hass.async_add_executor_job = AsyncMock()
+        self.player.hass = hass
+        self.player.async_write_ha_state = Mock()
+        self.player.entity_id = "media_player.test"
+
+        await self.player.async_play_media(MediaType.MUSIC, "media_source://test")
+
+        mock_is_media.assert_called_once_with("media_source://test")
+        mock_resolve.assert_called_once_with(hass, "media_source://test", "media_player.test")
+        mock_process_url.assert_called_once_with(hass, "http://resolved.media.url")
+        hass.async_add_executor_job.assert_called_once()
+
+    @patch("custom_components.wallpanel_media_player.wallpanel.requests.post")
+    @patch("custom_components.wallpanel_media_player.wallpanel.async_process_play_media_url")
+    async def test_async_play_media_string_type(self, mock_process_url, mock_post):
+        """Test async play media with string media type."""
+        mock_process_url.return_value = "http://example.com/test.mp3"
+        mock_response = Mock()
+        mock_response.raise_for_status.return_value = None
+        mock_post.return_value = mock_response
+
+        # Mock hass and async_add_executor_job
+        hass = Mock()
+        hass.async_add_executor_job = AsyncMock()
+        self.player.hass = hass
+        self.player.async_write_ha_state = Mock()
+
+        await self.player.async_play_media("music", "test.mp3")
+
+        mock_process_url.assert_called_once_with(hass, "test.mp3")
+        hass.async_add_executor_job.assert_called_once()
+
+        # Verify media content type is set to string
+        assert self.player.media_content_type == "music"
+
     @patch("custom_components.wallpanel_media_player.wallpanel.requests.post")
     @patch("custom_components.wallpanel_media_player.wallpanel.async_process_play_media_url")
     async def test_async_play_media_invalid_type(self, mock_process_url, mock_post):
@@ -143,10 +193,29 @@ class TestWallpanelMediaPlayer:
         """Test turn on."""
         self.player.async_write_ha_state = Mock()
 
+        # Set initial state to OFF
+        self.player._attr_state = MediaPlayerState.OFF
+        self.player._is_available = False
+
         self.player.turn_on()
 
         assert self.player.state == MediaPlayerState.IDLE
         assert self.player.available is True
+        self.player.async_write_ha_state.assert_called_once()
+
+    def test_turn_on_when_already_on(self):
+        """Test turn on when already on (should still call state update)."""
+        self.player.async_write_ha_state = Mock()
+
+        # Set initial state to already ON
+        self.player._attr_state = MediaPlayerState.IDLE
+        self.player._is_available = True
+
+        self.player.turn_on()
+
+        assert self.player.state == MediaPlayerState.IDLE
+        assert self.player.available is True
+        # Should still call async_write_ha_state to sync state
         self.player.async_write_ha_state.assert_called_once()
 
     def test_turn_off(self):
@@ -213,6 +282,9 @@ class TestSendCommand:
         # Should be called 4 times (initial + 3 retries)
         assert mock_post.call_count == 4
         assert mock_sleep.call_count == 3
+        # Verify connection state updated to unavailable
+        assert self.player.available is False
+        assert self.player.state == MediaPlayerState.OFF
 
     @patch("custom_components.wallpanel_media_player.wallpanel.requests.post")
     @patch("custom_components.wallpanel_media_player.wallpanel.time.sleep")
@@ -244,6 +316,27 @@ class TestSendCommand:
             self.player.send_command({"test": "command"})
 
         mock_post.assert_called_once()
+        # Verify connection state updated to unavailable
+        assert self.player.available is False
+
+    @patch("custom_components.wallpanel_media_player.wallpanel.requests.post")
+    def test_send_command_http_error_no_response(self, mock_post):
+        """Test HTTP error handling with response but no status_code."""
+        # Create a response without status_code attribute
+        mock_response = Mock()
+        del mock_response.status_code  # Remove status_code attribute
+
+        http_error = requests.exceptions.HTTPError("HTTP Error without status code")
+        http_error.response = mock_response
+
+        mock_post.side_effect = http_error
+
+        with pytest.raises(HomeAssistantError):
+            self.player.send_command({"test": "command"})
+
+        mock_post.assert_called_once()
+        # Verify connection state updated to unavailable
+        assert self.player.available is False
 
     @patch("custom_components.wallpanel_media_player.wallpanel.requests.post")
     def test_send_command_general_error(self, mock_post):

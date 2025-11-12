@@ -196,7 +196,8 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
                 raise HomeAssistantError(f"Wallpanel command timed out after {MAX_RETRIES} attempts: {err}")
 
         except requests.exceptions.HTTPError as err:
-            status_code = getattr(err.response, 'status_code', 'unknown')
+            response = getattr(err, 'response', None)
+            status_code = getattr(response, 'status_code', 'unknown')
             _LOGGER.error("HTTP error from Wallpanel: %s (status: %s)", err, status_code)
             self._update_connection_state(False)
             raise HomeAssistantError(f"Wallpanel returned HTTP {status_code}: {err}")
