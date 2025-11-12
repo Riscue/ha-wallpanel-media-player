@@ -25,7 +25,6 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
             MediaPlayerEntityFeature.VOLUME_SET
             | MediaPlayerEntityFeature.PLAY_MEDIA
             | MediaPlayerEntityFeature.STOP
-            | MediaPlayerEntityFeature.SPEAK
             | MediaPlayerEntityFeature.TURN_ON
             | MediaPlayerEntityFeature.TURN_OFF
     )
@@ -189,6 +188,7 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
             if retry_count < MAX_RETRIES:
                 _LOGGER.info("Retrying command due to timeout (attempt %d/%d)",
                            retry_count + 1, MAX_RETRIES)
+                time.sleep(RETRY_DELAY)
                 return self.send_command(payload, retry_count + 1)
             else:
                 _LOGGER.error("Command timed out after %d attempts: %s", MAX_RETRIES, err)
@@ -196,8 +196,8 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
                 raise HomeAssistantError(f"Wallpanel command timed out after {MAX_RETRIES} attempts: {err}")
 
         except requests.exceptions.HTTPError as err:
-            status_code = err.response.status_code
-            _LOGGER.error("HTTP error from Wallpanel: %s (status: %d)", err, status_code)
+            status_code = getattr(err.response, 'status_code', 'unknown')
+            _LOGGER.error("HTTP error from Wallpanel: %s (status: %s)", err, status_code)
             self._update_connection_state(False)
             raise HomeAssistantError(f"Wallpanel returned HTTP {status_code}: {err}")
 

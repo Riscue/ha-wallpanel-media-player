@@ -34,6 +34,6 @@ def setup_platform(
         discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Set up the Wallpanel Media Player platform."""
-    add_entities(
-        [WallpanelMediaPlayer(config.get(CONF_NAME, DEFAULT_NAME), config.get(CONF_ADDRESS))]
-    )
+    name = config.get(CONF_NAME, DEFAULT_NAME)
+    address = config.get(CONF_ADDRESS, "http://127.0.0.1:2971")
+    add_entities([WallpanelMediaPlayer(name, address)])
