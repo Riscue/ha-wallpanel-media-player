@@ -8,6 +8,7 @@ import requests
 from homeassistant.components import media_source
 from homeassistant.components.media_player import MediaPlayerEntity, MediaType, MediaPlayerEntityFeature, \
     MediaPlayerState, async_process_play_media_url
+from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,6 +28,8 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
             | MediaPlayerEntityFeature.PLAY_MEDIA
             | MediaPlayerEntityFeature.STOP
             | MediaPlayerEntityFeature.SPEAK
+            | MediaPlayerEntityFeature.TURN_ON
+            | MediaPlayerEntityFeature.TURN_OFF
     )
 
     def __init__(self, name, address):
@@ -41,6 +44,7 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
         self._attr_media_position = None
         self._attr_media_position_updated_at = None
         self._current_media_url = None
+        self._is_available = True
 
     def set_volume_level(self, volume: float) -> None:
         self._attr_volume_level = volume
@@ -95,6 +99,18 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
 
         await self.hass.async_add_executor_job(speak_command)
 
+    def turn_on(self) -> None:
+        """Turn the media player on."""
+        self._attr_state = MediaPlayerState.IDLE
+        self._is_available = True
+        self.async_write_ha_state()
+
+    def turn_off(self) -> None:
+        """Turn the media player off."""
+        self._attr_state = MediaPlayerState.OFF
+        self._is_available = False
+        self.async_write_ha_state()
+
     @property
     def media_position(self) -> int | None:
         """Position of current media in seconds."""
@@ -110,6 +126,29 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
         """Duration of current media in seconds."""
         return self._attr_media_duration
 
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return self._is_available
+
+    @property
+    def assumed_state(self) -> bool:
+        """Return True if we cannot track the state of the device."""
+        return False
+
+    @callback
+    def _update_connection_state(self, success: bool) -> None:
+        """Update connection state based on command success."""
+        was_available = self._is_available
+        self._is_available = success
+
+        if was_available != self._is_available:
+            if self._is_available:
+                self._attr_state = MediaPlayerState.IDLE
+            else:
+                self._attr_state = MediaPlayerState.OFF
+            self.async_write_ha_state()
+
     def send_command(self, payload, retry_count=0):
         """Send command to wallpanel with retry logic."""
         url = f"{self._address}/api/command"
@@ -124,6 +163,7 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
             )
             response.raise_for_status()
             _LOGGER.debug("Command sent successfully: %s", payload)
+            self._update_connection_state(True)
             return True
 
         except requests.exceptions.ConnectionError as err:
@@ -135,6 +175,7 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
                 return self.send_command(payload, retry_count + 1)
             else:
                 _LOGGER.error("Max retries reached for Wallpanel command: %s", err)
+                self._update_connection_state(False)
                 raise HomeAssistantError(f"Failed to connect to Wallpanel after {MAX_RETRIES} attempts: {err}")
 
         except requests.exceptions.Timeout as err:
@@ -145,13 +186,16 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
                 return self.send_command(payload, retry_count + 1)
             else:
                 _LOGGER.error("Command timed out after %d attempts: %s", MAX_RETRIES, err)
+                self._update_connection_state(False)
                 raise HomeAssistantError(f"Wallpanel command timed out after {MAX_RETRIES} attempts: {err}")
 
         except requests.exceptions.HTTPError as err:
             status_code = err.response.status_code
             _LOGGER.error("HTTP error from Wallpanel: %s (status: %d)", err, status_code)
+            self._update_connection_state(False)
             raise HomeAssistantError(f"Wallpanel returned HTTP {status_code}: {err}")
 
         except Exception as err:
             _LOGGER.error("Unexpected error sending command to Wallpanel: %s", err)
+            self._update_connection_state(False)
             raise HomeAssistantError(f"Unexpected error with Wallpanel: {err}")
