@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from typing import Any
 
 import requests
@@ -12,6 +13,8 @@ _LOGGER = logging.getLogger(__name__)
 
 HEADERS = {"Accept": "application/json", "Content-Type": "application/json; charset=utf-8"}
 TIMEOUT = 5
+MAX_RETRIES = 3
+RETRY_DELAY = 1
 
 
 class WallpanelMediaPlayer(MediaPlayerEntity):
@@ -72,7 +75,8 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
 
         await self.hass.async_add_executor_job(speak_command)
 
-    def send_command(self, payload):
+    def send_command(self, payload, retry_count=0):
+        """Send command to wallpanel with retry logic."""
         url = f"{self._address}/api/command"
         _LOGGER.debug("Sending command: %s -> %s", url, payload)
 
@@ -84,6 +88,35 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
                 timeout=TIMEOUT,
             )
             response.raise_for_status()
+            _LOGGER.debug("Command sent successfully: %s", payload)
+            return True
+
+        except requests.exceptions.ConnectionError as err:
+            _LOGGER.warning("Connection error to Wallpanel: %s", err)
+            if retry_count < MAX_RETRIES:
+                _LOGGER.info("Retrying command in %d seconds (attempt %d/%d)",
+                           RETRY_DELAY, retry_count + 1, MAX_RETRIES)
+                time.sleep(RETRY_DELAY)
+                return self.send_command(payload, retry_count + 1)
+            else:
+                _LOGGER.error("Max retries reached for Wallpanel command: %s", err)
+                raise HomeAssistantError(f"Failed to connect to Wallpanel after {MAX_RETRIES} attempts: {err}")
+
+        except requests.exceptions.Timeout as err:
+            _LOGGER.warning("Timeout sending command to Wallpanel: %s", err)
+            if retry_count < MAX_RETRIES:
+                _LOGGER.info("Retrying command due to timeout (attempt %d/%d)",
+                           retry_count + 1, MAX_RETRIES)
+                return self.send_command(payload, retry_count + 1)
+            else:
+                _LOGGER.error("Command timed out after %d attempts: %s", MAX_RETRIES, err)
+                raise HomeAssistantError(f"Wallpanel command timed out after {MAX_RETRIES} attempts: {err}")
+
+        except requests.exceptions.HTTPError as err:
+            status_code = err.response.status_code
+            _LOGGER.error("HTTP error from Wallpanel: %s (status: %d)", err, status_code)
+            raise HomeAssistantError(f"Wallpanel returned HTTP {status_code}: {err}")
+
         except Exception as err:
-            _LOGGER.error("Error sending command to Wallpanel: %s", err)
-            raise HomeAssistantError(err)
+            _LOGGER.error("Unexpected error sending command to Wallpanel: %s", err)
+            raise HomeAssistantError(f"Unexpected error with Wallpanel: {err}")
