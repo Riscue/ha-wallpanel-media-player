@@ -21,8 +21,6 @@ RETRY_DELAY = 1
 
 class WallpanelMediaPlayer(MediaPlayerEntity):
     """Representation of a Wallpanel Media Player."""
-
-    _attr_media_content_type = MediaType.MUSIC
     _attr_supported_features = (
             MediaPlayerEntityFeature.VOLUME_SET
             | MediaPlayerEntityFeature.PLAY_MEDIA
@@ -44,6 +42,7 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
         self._attr_media_position = None
         self._attr_media_position_updated_at = None
         self._current_media_url = None
+        self._attr_media_content_type = MediaType.MUSIC
         self._is_available = True
 
     def set_volume_level(self, volume: float) -> None:
@@ -87,6 +86,13 @@ class WallpanelMediaPlayer(MediaPlayerEntity):
             self._attr_media_position_updated_at = datetime.utcnow()
             # Reset duration as we don't get this info from Wallpanel API
             self._attr_media_duration = None
+
+            # Update media content type
+            if hasattr(media_type, 'value'):
+                self._attr_media_content_type = media_type
+            else:
+                self._attr_media_content_type = media_type
+
             self.send_command({"volume": int(self._attr_volume_level * 100), "audio": media_id})
             self.async_write_ha_state()
 
